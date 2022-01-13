@@ -2062,6 +2062,7 @@ std::size_t DocumentBroker::removeSession(const std::string& id)
                                      << ", IsViewLoaded: " << session->isViewLoaded()
                                      << ", IsWaitDisconnected: " << session->inWaitDisconnected()
                                      << ", MarkToDestroy: " << _docState.isMarkedToDestroy()
+                                     << ", Unloading: " << _docState.isUnloadRequested()
                                      << ", LastEditableSession: " << lastEditableSession
                                      << ", DontSaveIfUnmodified: " << dontSaveIfUnmodified
                                      << ", IsPossiblyModified: " << isPossiblyModified());
@@ -2135,15 +2136,6 @@ void DocumentBroker::disconnectSessionInternal(const std::string& id)
 #if !MOBILEAPP
             COOLWSD::dumpEndSessionTrace(getJailId(), id, _uriOrig);
 #endif
-            if (_docState.isUnloadRequested())
-            {
-                // We must be the last session, flag to destroy if unload is requested.
-                assert(_sessions.size() == 1 && "Unload-requested with multiple sessions.");
-                _docState.markToDestroy();
-                LOG_TRC("Unload requested while disconnecting session ["
-                        << id << "], having " << _sessions.size()
-                        << " sessions, marking to destroy.");
-            }
 
             std::shared_ptr<ClientSession> session = it->second;
             const bool lastEditableSession =
